@@ -1,41 +1,34 @@
 use amethyst::{
     assets::{AssetStorage, Loader, Handle},
-    core::transform::Transform,
-    ecs::prelude::{Component, DenseVecStorage},
+    core::{
+        transform::Transform,
+        math::{Point3, Vector3},
+        Named, Parent
+    },
+    ecs::prelude::{Component, DenseVecStorage, NullStorage },
+    ecs::{Entity},
     prelude::*,
-    renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
+    tiles::{MortonEncoder, TileMap, Tile},
+    window::ScreenDimensions,
+    renderer::{
+        Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
+        transparent::Transparent,
+    },
 };
 
+#[derive(Default)]
+struct Player;
 
-pub const ARENA_HEIGHT: f32 = 100.0;
-pub const ARENA_WIDTH: f32 = 100.0;
-
-pub const PADDLE_HEIGHT: f32 = 16.0;
-pub const PADDLE_WIDTH: f32 = 4.0;
-
-pub enum Side {
-    Left,
-    Right,
+impl Component for Player {
+    type Storage = NullStorage<Self>;
 }
 
-pub struct Paddle {
-    pub side: Side,
-    pub width: f32,
-    pub height: f32,
-}
-
-impl Paddle {
-    fn new(side: Side) -> Paddle {
-        Paddle {
-            side,
-            width: PADDLE_WIDTH,
-            height: PADDLE_HEIGHT,
-        }
+#[derive(Default, Clone)]
+pub struct ExampleTile;
+impl Tile for ExampleTile {
+    fn sprite(&self, _: Point3<u32>, _: &World) -> Option<usize> {
+        Some(1)
     }
-}
-
-impl Component for Paddle {
-    type Storage = DenseVecStorage<Self>;
 }
 
 pub struct Rl;
@@ -43,46 +36,84 @@ impl SimpleState for Rl {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
 
-        world.register::<Paddle>();
+        world.register::<Player>();
 
+        let tiles_handle = load_spritesheet(world, "tiles.png", "tiles_manual.ron");
+        let player       = init_player(world, &tiles_handle);
 
-        initialise_paddles(world);
-        initialise_camera(world);
+        let (width, height) = {
+            let dim = world.read_resource::<ScreenDimensions>();
+            (dim.width(), dim.height())
+        };
+
+        let _camera = init_camera(
+            world,
+            player,
+            Transform::from(Vector3::new(0.0, 0.0, 0.1)),
+            Camera::standard_2d(width, height),
+        );
+
+        let map = TileMap::<ExampleTile, MortonEncoder>::new(
+            Vector3::new(48, 48, 1),
+            Vector3::new(20, 20, 1),
+            Some(tiles_handle),
+        );
+
+        let _map_entity = world
+            .create_entity()
+            .with(map)
+            .with(Transform::default())
+            .build();
     }
 }
 
-fn initialise_camera(world: &mut World) {
-    // Setup camera in a way that our screen covers whole arena and (0, 0) is in the bottom left. 
-    let mut transform = Transform::default();
-    transform.set_translation_xyz(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5, 1.0);
-
+fn init_camera(world: &mut World, parent: Entity, transform: Transform, camera: Camera) -> Entity {
     world
         .create_entity()
-        .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
         .with(transform)
-        .build();
+        .with(Parent { entity: parent })
+        .with(camera)
+        .named("camera")
+        .build()
 }
 
-fn initialise_paddles(world: &mut World) {
-    let mut left_transform = Transform::default();
-    let mut right_transform = Transform::default();
-
-    // Correctly position the paddles.
-    let y = ARENA_HEIGHT / 2.0;
-    left_transform.set_translation_xyz(PADDLE_WIDTH * 0.5, y, 0.0);
-    right_transform.set_translation_xyz(ARENA_WIDTH - PADDLE_WIDTH * 0.5, y, 0.0);
-
-    // Create a left plank entity.
+fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Entity {
+    let mut transform = Transform::default();
+    transform.set_translation_xyz(0.0, 0.0, 0.1);
+    let sprite = SpriteRender {
+        sprite_sheet: sprite_sheet.clone(),
+        sprite_number: 32,
+    };
     world
         .create_entity()
-        .with(Paddle::new(Side::Left))
-        .with(left_transform)
-        .build();
+        .with(transform)
+        .with(Player)
+        .with(sprite)
+        .with(Transparent)
+        .named("player")
+        .build()
+}
 
-    // Create right plank entity.
-    world
-        .create_entity()
-        .with(Paddle::new(Side::Right))
-        .with(right_transform)
-        .build();
+fn load_spritesheet(world: &mut World, spritesheet: &str, spritesheet_ron: &str) -> Handle<SpriteSheet> {
+
+    let texture_handle = {
+        let loader = world.read_resource::<Loader>();
+        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+        loader.load(
+            format!("texture/{}", spritesheet),
+            ImageFormat::default(),
+            (),
+            &texture_storage,
+        )
+    };
+
+    let loader = world.read_resource::<Loader>();
+    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
+
+    loader.load(
+        format!("texture/{}", spritesheet_ron),
+        SpriteSheetFormat(texture_handle),
+        (),
+        &sprite_sheet_store,
+    )
 }

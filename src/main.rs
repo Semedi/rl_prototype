@@ -4,13 +4,14 @@ use amethyst::{
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
-        RenderingBundle,
+        RenderingBundle, 
     },
+    tiles::{RenderTiles2D, MortonEncoder},
     utils::application_root_dir,
 };
 
 mod rl;
-use crate::rl::Rl;
+use crate::rl::{Rl, ExampleTile};
 
 struct MyState;
 
@@ -30,7 +31,8 @@ fn main() -> amethyst::Result<()> {
                     RenderToWindow::from_config_path(display_config_path)?
                         .with_clear([0.0, 0.0, 0.0, 1.0]),
                 )
-                .with_plugin(RenderFlat2D::default()),
+                .with_plugin(RenderFlat2D::default())
+                .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default())
         )?
         .with_bundle(TransformBundle::new())?;
 
