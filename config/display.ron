@@ -1,0 +1,4 @@
+(
+  title: "rl_prototype",
+  dimensions: Some((500, 500)),
+)
