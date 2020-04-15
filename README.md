@@ -14,8 +14,9 @@ Windows and Linux users may explicitly choose `"vulkan"` with the following comm
 cargo run --no-default-features --features "vulkan"
 ```
 
-Mac OS X users may explicitly choose `"metal"` with the following command:
 
-```bash
-cargo run --no-default-features --features "metal"
-```
+
+
+## Tiles
+
+* https://www.kenney.nl/assets/bit-pack
