@@ -13,9 +13,6 @@ use amethyst::{
 mod rl;
 use crate::rl::{Rl, ExampleTile};
 
-struct MyState;
-
-
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
