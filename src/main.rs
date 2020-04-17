@@ -6,10 +6,12 @@ use amethyst::{
         types::DefaultBackend,
         RenderingBundle, 
     },
+    input::{InputBundle, StringBindings},
     tiles::{RenderTiles2D, MortonEncoder},
     utils::application_root_dir,
 };
 
+mod systems;
 mod rl;
 use crate::rl::{Rl, ExampleTile};
 
@@ -22,6 +24,31 @@ fn main() -> amethyst::Result<()> {
 
     // We'll put the rest of the code here.
     let game_data = GameDataBuilder::default()
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(
+            InputBundle::<StringBindings>::new()
+                .with_bindings_from_file("config/input.ron")?,
+        )?
+        .with(
+            systems::MapMovementSystem::default(),
+            "MapMovementSystem",
+            &["input_system"],
+        )
+        .with(
+            systems::CameraSwitchSystem::default(),
+            "camera_switch",
+            &["input_system"],
+        )
+        .with(
+            systems::CameraMovementSystem::default(),
+            "movement",
+            &["camera_switch"],
+        )
+        .with(
+            systems::DrawSelectionSystem::default(),
+            "DrawSelectionSystem",
+            &["camera_switch"],
+        )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 .with_plugin(
@@ -30,8 +57,7 @@ fn main() -> amethyst::Result<()> {
                 )
                 .with_plugin(RenderFlat2D::default())
                 .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default())
-        )?
-        .with_bundle(TransformBundle::new())?;
+        )?;
 
     let mut game = Application::new(assets_dir, Rl, game_data)?;
     game.run();

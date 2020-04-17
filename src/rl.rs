@@ -3,9 +3,9 @@ use amethyst::{
     core::{
         transform::Transform,
         math::{Point3, Vector3},
-        Named, Parent
+        Parent
     },
-    ecs::prelude::{Component, DenseVecStorage, NullStorage },
+    ecs::prelude::{Component, NullStorage },
     ecs::{Entity},
     prelude::*,
     tiles::{MortonEncoder, TileMap, Tile},
@@ -15,6 +15,7 @@ use amethyst::{
         transparent::Transparent,
     },
 };
+
 
 #[derive(Default)]
 struct Player;
@@ -67,7 +68,7 @@ impl SimpleState for Rl {
     }
 }
 
-fn init_camera(world: &mut World, parent: Entity, transform: Transform, camera: Camera) -> Entity {
+pub fn init_camera(world: &mut World, parent: Entity, transform: Transform, camera: Camera) -> Entity {
     world
         .create_entity()
         .with(transform)
