@@ -38,6 +38,7 @@ impl<'s> System<'s> for DrawSelectionSystem {
         &mut self,
         (entities, active_camera, dimensions, cameras, transforms, mut debug_lines, input): Self::SystemData,
     ) {
+
         if let Some(lines) = (&mut debug_lines).join().next() {
             lines.clear();
 

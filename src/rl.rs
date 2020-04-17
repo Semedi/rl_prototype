@@ -11,9 +11,12 @@ use amethyst::{
     tiles::{MortonEncoder, TileMap, Tile},
     window::ScreenDimensions,
     renderer::{
+        debug_drawing::DebugLinesComponent,
         Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
         transparent::Transparent,
     },
+    input::{is_close_requested, is_key_down},
+    winit,
 };
 
 
@@ -54,6 +57,11 @@ impl SimpleState for Rl {
             Camera::standard_2d(width, height),
         );
 
+        let _ = world
+            .create_entity()
+            .with(DebugLinesComponent::with_capacity(1))
+            .build();
+
         let map = TileMap::<ExampleTile, MortonEncoder>::new(
             Vector3::new(48, 48, 1),
             Vector3::new(20, 20, 1),
@@ -65,6 +73,23 @@ impl SimpleState for Rl {
             .with(map)
             .with(Transform::default())
             .build();
+    }
+
+    fn handle_event(
+        &mut self,
+        data: StateData<'_, GameData<'_, '_>>,
+        event: StateEvent,
+    ) -> SimpleTrans {
+        let StateData { .. } = data;
+        if let StateEvent::Window(event) = &event {
+            if is_close_requested(&event) || is_key_down(&event, winit::VirtualKeyCode::Escape) {
+                Trans::Quit
+            } else {
+                Trans::None
+            }
+        } else {
+            Trans::None
+        }
     }
 }
 
