@@ -40,6 +40,11 @@ fn main() -> amethyst::Result<()> {
             &["input_system"],
         )
         .with(
+            systems::PlayerMovement::default(),
+            "PlayerMovement",
+            &["input_system"],
+        )
+        .with(
             systems::CameraMovementSystem::default(),
             "movement",
             &["camera_switch"],
