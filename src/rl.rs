@@ -1,28 +1,25 @@
 use amethyst::{
-    assets::{AssetStorage, Loader, Handle},
+    assets::{AssetStorage, Handle, Loader},
     core::{
-        transform::Transform,
         math::{Point3, Vector3},
-        Parent
+        transform::Transform,
+        Parent,
     },
-    ecs::prelude::{Component, NullStorage },
-    ecs::{Entity},
+    ecs::prelude::{Component, NullStorage},
+    ecs::Entity,
+    input::{is_close_requested, is_key_down, VirtualKeyCode},
     prelude::*,
-    tiles::{MortonEncoder, TileMap, Tile},
-    window::ScreenDimensions,
     renderer::{
-        debug_drawing::DebugLinesComponent,
-        Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
-        transparent::Transparent,
+        debug_drawing::DebugLinesComponent, transparent::Transparent, Camera, ImageFormat,
+        SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
     },
-    input::{is_close_requested, is_key_down},
+    tiles::{MortonEncoder, Tile, TileMap},
+    window::ScreenDimensions,
     winit,
 };
 
-
 #[derive(Default)]
 struct Player;
-
 impl Component for Player {
     type Storage = NullStorage<Self>;
 }
@@ -35,6 +32,58 @@ impl Tile for ExampleTile {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CurrentState {
+    Wait,
+    Gameplay,
+}
+
+impl Default for CurrentState {
+    fn default() -> Self {
+        CurrentState::Gameplay
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UserAction {
+    OpenMenu,
+    Turn,
+    Quit,
+}
+
+pub struct Game {
+    pub user_action: Option<UserAction>,
+    current_state: CurrentState,
+}
+impl Default for Game {
+    fn default() -> Self {
+        Game {
+            user_action: None,
+            current_state: CurrentState::default(),
+        }
+    }
+}
+
+pub struct PausedState;
+impl SimpleState for PausedState {
+    fn handle_event(
+        &mut self,
+        _data: StateData<'_, GameData<'_, '_>>,
+        event: StateEvent,
+    ) -> SimpleTrans {
+        if let StateEvent::Window(event) = &event {
+            if is_key_down(&event, VirtualKeyCode::Escape) {
+                return Trans::Pop;
+            }
+        }
+        Trans::None
+    }
+
+    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        data.world.write_resource::<Game>().current_state = CurrentState::Wait;
+    }
+}
+
 pub struct Rl;
 impl SimpleState for Rl {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -43,7 +92,7 @@ impl SimpleState for Rl {
         world.register::<Player>();
 
         let tiles_handle = load_spritesheet(world, "tiles.png", "tiles_manual.ron");
-        let player       = init_player(world, &tiles_handle);
+        let player = init_player(world, &tiles_handle);
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();
@@ -75,6 +124,20 @@ impl SimpleState for Rl {
             .build();
     }
 
+    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+        let mut game = data.world.write_resource::<Game>();
+        if let Some(UserAction::Turn) = game.user_action.take() {
+            println!("shit");
+            return Trans::Push(Box::new(PausedState));
+        }
+
+        Trans::None
+    }
+
+    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        data.world.write_resource::<Game>().current_state = CurrentState::Gameplay;
+    }
+
     fn handle_event(
         &mut self,
         data: StateData<'_, GameData<'_, '_>>,
@@ -93,7 +156,12 @@ impl SimpleState for Rl {
     }
 }
 
-pub fn init_camera(world: &mut World, parent: Entity, transform: Transform, camera: Camera) -> Entity {
+pub fn init_camera(
+    world: &mut World,
+    parent: Entity,
+    transform: Transform,
+    camera: Camera,
+) -> Entity {
     world
         .create_entity()
         .with(transform)
@@ -120,8 +188,11 @@ fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Entity 
         .build()
 }
 
-fn load_spritesheet(world: &mut World, spritesheet: &str, spritesheet_ron: &str) -> Handle<SpriteSheet> {
-
+fn load_spritesheet(
+    world: &mut World,
+    spritesheet: &str,
+    spritesheet_ron: &str,
+) -> Handle<SpriteSheet> {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();

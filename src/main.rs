@@ -1,19 +1,19 @@
 use amethyst::{
-    prelude::*,
     core::TransformBundle,
+    input::{InputBundle, StringBindings},
+    prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
-        RenderingBundle, RenderDebugLines
+        RenderDebugLines, RenderingBundle,
     },
-    input::{InputBundle, StringBindings},
-    tiles::{RenderTiles2D, MortonEncoder},
+    tiles::{MortonEncoder, RenderTiles2D},
     utils::application_root_dir,
 };
 
-mod systems;
 mod rl;
-use crate::rl::{Rl, ExampleTile};
+mod systems;
+use crate::rl::{ExampleTile, Game, Rl};
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -26,8 +26,7 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
         .with_bundle(
-            InputBundle::<StringBindings>::new()
-                .with_bindings_from_file("config/input.ron")?,
+            InputBundle::<StringBindings>::new().with_bindings_from_file("config/input.ron")?,
         )?
         .with(
             systems::MapMovementSystem::default(),
@@ -62,10 +61,14 @@ fn main() -> amethyst::Result<()> {
                 )
                 .with_plugin(RenderDebugLines::default())
                 .with_plugin(RenderFlat2D::default())
-                .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default())
+                .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default()),
         )?;
 
-    let mut game = Application::new(assets_dir, Rl, game_data)?;
+    let mut game = Application::build(assets_dir, Rl)?
+        .with_resource(Game::default())
+        .build(game_data)?;
+
+    //let mut game = Application::new(assets_dir, Rl, game_data)?;
     game.run();
 
     Ok(())
