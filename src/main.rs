@@ -28,6 +28,16 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(
             InputBundle::<StringBindings>::new().with_bindings_from_file("config/input.ron")?,
         )?
+        .with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(
+                    RenderToWindow::from_config_path(display_config_path)?
+                        .with_clear([0.0, 0.0, 0.0, 1.0]),
+                )
+                .with_plugin(RenderDebugLines::default())
+                .with_plugin(RenderFlat2D::default())
+                .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default()),
+        )?
         .with(
             systems::MapMovementSystem::default(),
             "MapMovementSystem",
@@ -52,17 +62,7 @@ fn main() -> amethyst::Result<()> {
             systems::DrawSelectionSystem::default(),
             "DrawSelectionSystem",
             &["camera_switch"],
-        )
-        .with_bundle(
-            RenderingBundle::<DefaultBackend>::new()
-                .with_plugin(
-                    RenderToWindow::from_config_path(display_config_path)?
-                        .with_clear([0.0, 0.0, 0.0, 1.0]),
-                )
-                .with_plugin(RenderDebugLines::default())
-                .with_plugin(RenderFlat2D::default())
-                .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default()),
-        )?;
+        );
 
     let mut game = Application::build(assets_dir, Rl)?
         .with_resource(Game::default())
