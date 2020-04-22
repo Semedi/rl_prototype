@@ -37,34 +37,9 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderDebugLines::default())
                 .with_plugin(RenderFlat2D::default())
                 .with_plugin(RenderTiles2D::<ExampleTile, MortonEncoder>::default()),
-        )?
-        .with(
-            systems::MapMovementSystem::default(),
-            "MapMovementSystem",
-            &["input_system"],
-        )
-        .with(
-            systems::CameraSwitchSystem::default(),
-            "camera_switch",
-            &["input_system"],
-        )
-        .with(
-            systems::PlayerMovement::default(),
-            "PlayerMovement",
-            &["input_system"],
-        )
-        .with(
-            systems::CameraMovementSystem::default(),
-            "movement",
-            &["camera_switch"],
-        )
-        .with(
-            systems::DrawSelectionSystem::default(),
-            "DrawSelectionSystem",
-            &["camera_switch"],
-        );
+        )?;
 
-    let mut game = Application::build(assets_dir, Rl)?
+    let mut game = Application::build(assets_dir, Rl::default())?
         .with_resource(Game::default())
         .build(game_data)?;
 

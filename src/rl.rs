@@ -5,8 +5,8 @@ use amethyst::{
         transform::Transform,
         Parent,
     },
-    ecs::prelude::{Component, NullStorage},
-    ecs::Entity,
+    ecs::prelude::{Component, NullStorage, Dispatcher, DispatcherBuilder},
+    ecs::{Entity},
     input::{is_close_requested, is_key_down, VirtualKeyCode},
     prelude::*,
     renderer::{
@@ -17,6 +17,9 @@ use amethyst::{
     window::ScreenDimensions,
     winit,
 };
+
+use crate::systems;
+
 
 #[derive(Default)]
 struct Player;
@@ -84,14 +87,56 @@ impl SimpleState for PausedState {
     }
 }
 
-pub struct Rl;
+pub struct Rl {
+    dispatcher: Dispatcher<'static, 'static>,
+}
+
+impl Default for Rl {
+    fn default() -> Self{
+        Rl {
+            dispatcher: DispatcherBuilder::new()
+                .with(
+                    systems::MapMovementSystem::default(),
+                    "MapMovementSystem",
+                    &[],
+                )
+                .with(
+                    systems::CameraSwitchSystem::default(),
+                    "camera_switch",
+                    &[],
+                )
+                .with(
+                    systems::PlayerMovement::default(),
+                    "PlayerMovement",
+                    &[],
+                )
+                .with(
+                    systems::CameraMovementSystem::default(),
+                    "movement",
+                    &["camera_switch"],
+                )
+                .with(
+                    systems::DrawSelectionSystem::default(),
+                    "DrawSelectionSystem",
+                    &["camera_switch"],
+                )
+                .build()
+        }
+    }
+}
+
+
+
+
 impl SimpleState for Rl {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        let world = data.world;
+        let world        = data.world;
+        let tiles_handle = load_spritesheet(world, "tiles.png", "tiles_manual.ron");
+
+        self.dispatcher.setup(world);
 
         world.register::<Player>();
 
-        let tiles_handle = load_spritesheet(world, "tiles.png", "tiles_manual.ron");
         let player = init_player(world, &tiles_handle);
 
         let (width, height) = {
@@ -125,6 +170,8 @@ impl SimpleState for Rl {
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+        self.dispatcher.dispatch(data.world);
+
         let mut game = data.world.write_resource::<Game>();
         if let Some(UserAction::Turn) = game.user_action.take() {
             println!("shit");
@@ -155,6 +202,15 @@ impl SimpleState for Rl {
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 pub fn init_camera(
     world: &mut World,
