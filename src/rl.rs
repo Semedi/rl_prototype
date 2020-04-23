@@ -82,6 +82,10 @@ impl SimpleState for PausedState {
         Trans::None
     }
 
+    fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+        Trans::Pop
+    }
+
     fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         data.world.write_resource::<Game>().current_state = CurrentState::Wait;
     }
@@ -96,29 +100,9 @@ impl Default for Rl {
         Rl {
             dispatcher: DispatcherBuilder::new()
                 .with(
-                    systems::MapMovementSystem::default(),
-                    "MapMovementSystem",
-                    &[],
-                )
-                .with(
-                    systems::CameraSwitchSystem::default(),
-                    "camera_switch",
-                    &[],
-                )
-                .with(
                     systems::PlayerMovement::default(),
                     "PlayerMovement",
                     &[],
-                )
-                .with(
-                    systems::CameraMovementSystem::default(),
-                    "movement",
-                    &["camera_switch"],
-                )
-                .with(
-                    systems::DrawSelectionSystem::default(),
-                    "DrawSelectionSystem",
-                    &["camera_switch"],
                 )
                 .build()
         }
@@ -169,7 +153,7 @@ impl SimpleState for Rl {
             .build();
     }
 
-    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+    fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         self.dispatcher.dispatch(data.world);
 
         let mut game = data.world.write_resource::<Game>();
@@ -202,15 +186,6 @@ impl SimpleState for Rl {
         }
     }
 }
-
-
-
-
-
-
-
-
-
 
 pub fn init_camera(
     world: &mut World,
