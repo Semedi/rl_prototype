@@ -5,13 +5,13 @@ use amethyst::{
         transform::Transform,
         Parent,
     },
-    ecs::prelude::{Component, NullStorage, Dispatcher, DispatcherBuilder},
-    ecs::{Entity},
+    ecs::prelude::{Dispatcher, DispatcherBuilder},
+    ecs::Entity,
     input::{is_close_requested, is_key_down, VirtualKeyCode},
     prelude::*,
     renderer::{
-        debug_drawing::DebugLinesComponent, transparent::Transparent, Camera, ImageFormat,
-        SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
+        debug_drawing::DebugLinesComponent, Camera, ImageFormat,
+        SpriteSheet, SpriteSheetFormat, Texture,
     },
     tiles::{MortonEncoder, Tile, TileMap},
     window::ScreenDimensions,
@@ -19,13 +19,7 @@ use amethyst::{
 };
 
 use crate::systems;
-
-
-#[derive(Default)]
-struct Player;
-impl Component for Player {
-    type Storage = NullStorage<Self>;
-}
+use crate::components;
 
 #[derive(Default, Clone)]
 pub struct ExampleTile;
@@ -119,9 +113,9 @@ impl SimpleState for Rl {
 
         self.dispatcher.setup(world);
 
-        world.register::<Player>();
+        world.register::<components::Player>();
 
-        let player = init_player(world, &tiles_handle);
+        let player = components::init_player(world, &tiles_handle);
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();
@@ -199,23 +193,6 @@ pub fn init_camera(
         .with(Parent { entity: parent })
         .with(camera)
         .named("camera")
-        .build()
-}
-
-fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Entity {
-    let mut transform = Transform::default();
-    transform.set_translation_xyz(0.0, 0.0, 0.1);
-    let sprite = SpriteRender {
-        sprite_sheet: sprite_sheet.clone(),
-        sprite_number: 32,
-    };
-    world
-        .create_entity()
-        .with(transform)
-        .with(Player)
-        .with(sprite)
-        .with(Transparent)
-        .named("player")
         .build()
 }
 

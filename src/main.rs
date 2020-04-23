@@ -13,6 +13,8 @@ use amethyst::{
 
 mod rl;
 mod systems;
+mod components;
+
 use crate::rl::{ExampleTile, Game, Rl};
 
 fn main() -> amethyst::Result<()> {
