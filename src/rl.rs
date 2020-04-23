@@ -20,6 +20,7 @@ use amethyst::{
 
 use crate::systems;
 use crate::components;
+use crate::entities;
 
 #[derive(Default, Clone)]
 pub struct ExampleTile;
@@ -115,7 +116,7 @@ impl SimpleState for Rl {
 
         world.register::<components::Player>();
 
-        let player = components::init_player(world, &tiles_handle);
+        let player = entities::init_player(world, &tiles_handle);
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();

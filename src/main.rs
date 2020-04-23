@@ -11,9 +11,10 @@ use amethyst::{
     utils::application_root_dir,
 };
 
-mod rl;
-mod systems;
-mod components;
+pub mod rl;
+pub mod systems;
+pub mod entities;
+pub mod components;
 
 use crate::rl::{ExampleTile, Game, Rl};
 
