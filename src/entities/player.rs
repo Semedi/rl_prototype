@@ -18,10 +18,12 @@ pub fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Ent
         sprite_sheet: sprite_sheet.clone(),
         sprite_number: 32,
     };
+
+    let player = components::Player::new();
     world
         .create_entity()
         .with(transform)
-        .with(components::Player)
+        .with(player)
         .with(sprite)
         .with(Transparent)
         .named("player")
