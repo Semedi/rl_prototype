@@ -30,20 +30,21 @@ impl<'s> System<'s> for PlayerMovement {
 
     fn run(&mut self, (tilemaps, t, mut transforms, mut players, input, mut game): Self::SystemData) {
 
-        let mut move_left = input.action_is_down("move_left").unwrap();
+        let moves: [&'static str; 4] = ["move_left", "move_right", "move_down", "move_up"];
 
         for (transform, player) in (&mut transforms, &mut players).join() {
             let can_move = player.can_move(t.delta_seconds());
 
-            move_left = move_left & can_move;
+            for &m in moves.iter() {
 
-            if move_left {
-                game.user_action = Some(UserAction::Turn);
-                player.movement();
-                println!("move_left");
+                let movement = input.action_is_down(m).unwrap() && can_move;
+
+                if movement {
+                    game.user_action = Some(UserAction::Turn);
+                    player.movement();
+                    println!("{}", m);
+                }
             }
-
         }
-
     }
 }

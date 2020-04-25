@@ -23,5 +23,8 @@
         "toggle_rotation": [[Key(Y)]],
         "toggle_translation": [[Key(T)]],
         "move_left": [[Key(Left)], [Key(H)]],
+        "move_right": [[Key(Right)], [Key(L)]],
+        "move_up": [[Key(Up)], [Key(K)]],
+        "move_down": [[Key(Down)], [Key(J)]],
     },
 )
