@@ -15,8 +15,10 @@ pub mod rl;
 pub mod systems;
 pub mod entities;
 pub mod components;
+pub mod resources;
 
-use crate::rl::{ExampleTile, Game, Rl};
+use crate::rl::{Game, Rl};
+use crate::entities::ExampleTile;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());

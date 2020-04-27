@@ -1,7 +1,7 @@
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
     core::{
-        math::{Point3, Vector3},
+        math::Vector3,
         transform::Transform,
         Parent,
     },
@@ -13,7 +13,6 @@ use amethyst::{
         debug_drawing::DebugLinesComponent, Camera, ImageFormat,
         SpriteSheet, SpriteSheetFormat, Texture,
     },
-    tiles::{MortonEncoder, Tile, TileMap},
     window::ScreenDimensions,
     winit,
 };
@@ -21,14 +20,8 @@ use amethyst::{
 use crate::systems;
 use crate::components;
 use crate::entities;
+use crate::resources;
 
-#[derive(Default, Clone)]
-pub struct ExampleTile;
-impl Tile for ExampleTile {
-    fn sprite(&self, _: Point3<u32>, _: &World) -> Option<usize> {
-        Some(1)
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CurrentState {
@@ -77,7 +70,7 @@ impl SimpleState for PausedState {
         Trans::None
     }
 
-    fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+    fn fixed_update(&mut self, _data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         Trans::Pop
     }
 
@@ -104,9 +97,6 @@ impl Default for Rl {
     }
 }
 
-
-
-
 impl SimpleState for Rl {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world        = data.world;
@@ -120,6 +110,7 @@ impl SimpleState for Rl {
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();
+
             (dim.width(), dim.height())
         };
 
@@ -135,17 +126,8 @@ impl SimpleState for Rl {
             .with(DebugLinesComponent::with_capacity(1))
             .build();
 
-        let map = TileMap::<ExampleTile, MortonEncoder>::new(
-            Vector3::new(48, 48, 1),
-            Vector3::new(20, 20, 1),
-            Some(tiles_handle),
-        );
-
-        let _map_entity = world
-            .create_entity()
-            .with(map)
-            .with(Transform::default())
-            .build();
+        let map = entities::init_map(world, tiles_handle);
+        resources::create_map_resource(world, map);
     }
 
     fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {

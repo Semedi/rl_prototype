@@ -3,12 +3,11 @@ use amethyst::{
         Transform, 
         timing::Time
     },
-    ecs::{Join, Read, ReadStorage, System, Write, WriteStorage},
+    ecs::{Join, Read, System, Write, WriteStorage},
     input::{InputHandler, StringBindings},
-    tiles::TileMap,
 };
 
-use crate::rl::{ExampleTile, Game, UserAction};
+use crate::rl::{Game, UserAction,};
 use crate::components::Player;
 
 pub struct PlayerMovement;
@@ -20,7 +19,6 @@ impl Default for PlayerMovement {
 
 impl<'s> System<'s> for PlayerMovement {
     type SystemData = (
-        ReadStorage<'s, TileMap<ExampleTile>>,
         Read<'s, Time>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Player>,
@@ -28,15 +26,13 @@ impl<'s> System<'s> for PlayerMovement {
         Write<'s, Game>,
     );
 
-    fn run(&mut self, (tilemaps, t, mut transforms, mut players, input, mut game): Self::SystemData) {
-
+    fn run(&mut self, (t, mut transforms, mut players, input, mut game): Self::SystemData) {
         let moves: [&'static str; 4] = ["move_left", "move_right", "move_down", "move_up"];
 
-        for (transform, player) in (&mut transforms, &mut players).join() {
+        for (_transform, player) in (&mut transforms, &mut players).join() {
             let can_move = player.can_move(t.delta_seconds());
 
             for &m in moves.iter() {
-
                 let movement = input.action_is_down(m).unwrap() && can_move;
 
                 if movement {
@@ -48,3 +44,23 @@ impl<'s> System<'s> for PlayerMovement {
         }
     }
 }
+
+        //let map = {
+        //    if let Some((map_tiles, map_transform)) = (&mut transforms, &tilemap).join().get(region.current, &entities){
+
+        //        Some((map_tiles, map_transform))
+        //    } else {
+        //        None
+        //    }
+        //};
+        //if let Some((map_tiles, map_transform)) = map {
+        //    println!("is working!");
+        //}
+
+
+
+        //if let Some(map) = tilemap.get(region.current) {
+        //        println!("{}", map.origin());
+        //    }
+        //}
+

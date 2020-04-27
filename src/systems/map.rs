@@ -9,7 +9,7 @@ use amethyst::{
 };
 
 use crate::{
-    rl::ExampleTile,
+    entities::ExampleTile,
 };
 
 pub struct MapMovementSystem {
