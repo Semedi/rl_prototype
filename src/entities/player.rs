@@ -1,29 +1,46 @@
 use amethyst::{
     assets::Handle,
     ecs::Entity,
+    ecs::Join,
     prelude::*,
-    core::transform::Transform,
+    core::{
+        transform::Transform,
+        math::{Vector3, Point3},
+    },
     renderer::{
         transparent::Transparent,
         SpriteRender, SpriteSheet,
-    }
+    },
+    tiles::{TileMap, Map, MortonEncoder},
 };
 
 use crate::components;
 use crate::resources::LocalMap;
+use crate::{
+    entities::ExampleTile,
+};
 
 pub fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Entity {
-    let mut transform = Transform::default();
+    let mut ptransform = Transform::default();
 
-    let _pos = {
-        let map = world.read_resource::<LocalMap>();
+    {
+        let ts    = world.read_storage::<Transform>();
+        let tmaps = world.read_storage::<TileMap::<ExampleTile, MortonEncoder>>();
 
-        map.get_pos(world, 1, 1)
-    };
+        let map   = world.read_resource::<LocalMap>();
 
+        if let Some((transform, map)) = (&ts, &tmaps).join().get(map.current, &world.entities()){
 
-    transform.set_translation_xyz(0.0, 155.0, 1.0);
+            let v = map.to_world( &Point3::new(0, 0, 1), Some(&transform)); 
 
+            println!("{}",v);
+
+            ptransform.set_translation_xyz(v.x, v.y, v.z);
+        }
+        else{
+            println!("mierda");
+        }
+    }
 
     let sprite = SpriteRender {
         sprite_sheet: sprite_sheet.clone(),
@@ -33,7 +50,7 @@ pub fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Ent
     let player = components::Player::new();
     world
         .create_entity()
-        .with(transform)
+        .with(ptransform)
         .with(player)
         .with(sprite)
         .with(Transparent)
