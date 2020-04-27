@@ -10,14 +10,14 @@ use amethyst::{
 use crate::rl::{Game, UserAction,};
 use crate::components::Player;
 
-pub struct PlayerMovement;
-impl Default for PlayerMovement {
+pub struct PlayerInput;
+impl Default for PlayerInput {
     fn default() -> Self {
         Self {}
     }
 }
 
-impl<'s> System<'s> for PlayerMovement {
+impl<'s> System<'s> for PlayerInput {
     type SystemData = (
         Read<'s, Time>,
         WriteStorage<'s, Transform>,

@@ -88,8 +88,8 @@ impl Default for Rl {
         Rl {
             dispatcher: DispatcherBuilder::new()
                 .with(
-                    systems::PlayerMovement::default(),
-                    "PlayerMovement",
+                    systems::PlayerInput::default(),
+                    "PlayerInput",
                     &[],
                 )
                 .build()

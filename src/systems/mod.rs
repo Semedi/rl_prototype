@@ -7,5 +7,5 @@ pub use self::{
     camera::{CameraSwitchSystem, CameraMovementSystem},
     drawselection::DrawSelectionSystem,
     map::MapMovementSystem,
-    player::PlayerMovement,
+    player::PlayerInput,
 };
