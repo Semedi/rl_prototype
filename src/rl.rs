@@ -104,9 +104,7 @@ impl SimpleState for Rl {
 
         self.dispatcher.setup(world);
 
-        world.register::<components::Player>();
-
-        let player = entities::init_player(world, &tiles_handle);
+        //world.register::<components::Player>();
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();
@@ -114,20 +112,22 @@ impl SimpleState for Rl {
             (dim.width(), dim.height())
         };
 
-        let _camera = init_camera(
-            world,
-            player,
-            Transform::from(Vector3::new(0.0, 0.0, 0.1)),
-            Camera::standard_2d(width, height),
-        );
 
         let _ = world
             .create_entity()
             .with(DebugLinesComponent::with_capacity(1))
             .build();
 
-        let map = entities::init_map(world, tiles_handle);
+        let map = entities::init_map(world, tiles_handle.clone());
         resources::create_map_resource(world, map);
+
+        let player = entities::init_player(world, &tiles_handle);
+        let _camera = init_camera(
+            world,
+            player,
+            Transform::from(Vector3::new(0.0, 0.0, 0.1)),
+            Camera::standard_2d(width, height),
+        );
     }
 
     fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
