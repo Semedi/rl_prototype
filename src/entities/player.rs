@@ -2,28 +2,23 @@ use amethyst::{
     assets::Handle,
     ecs::Entity,
     prelude::*,
-    core::transform::Transform,
+    core::{
+        transform::Transform,
+    },
     renderer::{
         transparent::Transparent,
         SpriteRender, SpriteSheet,
-    }
+    },
 };
 
 use crate::components;
-use crate::resources::LocalMap;
+use crate::tiles;
 
 pub fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Entity {
-    let mut transform = Transform::default();
+    let mut ptransform = Transform::default();
 
-    let _pos = {
-        let map = world.read_resource::<LocalMap>();
-
-        map.get_pos(world, 1, 1)
-    };
-
-
-    transform.set_translation_xyz(0.0, 155.0, 1.0);
-
+    let pos = tiles::get_pos(world, 10, 22).unwrap();
+    ptransform.set_translation_xyz(pos.x, pos.y, pos.z);
 
     let sprite = SpriteRender {
         sprite_sheet: sprite_sheet.clone(),
@@ -33,7 +28,7 @@ pub fn init_player(world: &mut World, sprite_sheet: &Handle<SpriteSheet>) -> Ent
     let player = components::Player::new();
     world
         .create_entity()
-        .with(transform)
+        .with(ptransform)
         .with(player)
         .with(sprite)
         .with(Transparent)

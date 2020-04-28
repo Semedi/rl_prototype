@@ -12,6 +12,7 @@ use amethyst::{
 };
 
 pub mod rl;
+pub mod tiles;
 pub mod systems;
 pub mod entities;
 pub mod components;

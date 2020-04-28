@@ -18,7 +18,6 @@ use amethyst::{
 };
 
 use crate::systems;
-use crate::components;
 use crate::entities;
 use crate::resources;
 
