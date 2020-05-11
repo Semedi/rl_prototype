@@ -18,7 +18,7 @@ pub mod entities;
 pub mod components;
 pub mod resources;
 
-use crate::rl::{Game, Rl};
+use crate::rl::{Game, InputState};
 use crate::entities::ExampleTile;
 
 fn main() -> amethyst::Result<()> {
@@ -65,7 +65,7 @@ fn main() -> amethyst::Result<()> {
             &["camera_switch"],
         );
 
-    let mut game = Application::build(assets_dir, Rl::default())?
+    let mut game = Application::build(assets_dir, InputState::default())?
         .with_resource(Game::default())
         .build(game_data)?;
 

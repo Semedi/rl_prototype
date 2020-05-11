@@ -24,13 +24,13 @@ use crate::resources;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CurrentState {
-    Wait,
-    Gameplay,
+    PlayerTurn,
+    AwaitInput,
 }
 
 impl Default for CurrentState {
     fn default() -> Self {
-        CurrentState::Gameplay
+        CurrentState::AwaitInput
     }
 }
 
@@ -54,8 +54,8 @@ impl Default for Game {
     }
 }
 
-pub struct PausedState;
-impl SimpleState for PausedState {
+pub struct ActionState;
+impl SimpleState for ActionState {
     fn handle_event(
         &mut self,
         _data: StateData<'_, GameData<'_, '_>>,
@@ -74,17 +74,17 @@ impl SimpleState for PausedState {
     }
 
     fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        data.world.write_resource::<Game>().current_state = CurrentState::Wait;
+        data.world.write_resource::<Game>().current_state = CurrentState::PlayerTurn;
     }
 }
 
-pub struct Rl {
+pub struct InputState {
     dispatcher: Dispatcher<'static, 'static>,
 }
 
-impl Default for Rl {
+impl Default for InputState {
     fn default() -> Self{
-        Rl {
+        InputState {
             dispatcher: DispatcherBuilder::new()
                 .with(
                     systems::PlayerInput::default(),
@@ -96,7 +96,7 @@ impl Default for Rl {
     }
 }
 
-impl SimpleState for Rl {
+impl SimpleState for InputState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world        = data.world;
         let tiles_handle = load_spritesheet(world, "tiles.png", "tiles_manual.ron");
@@ -135,14 +135,14 @@ impl SimpleState for Rl {
         let mut game = data.world.write_resource::<Game>();
         if let Some(UserAction::Turn) = game.user_action.take() {
             println!("shit");
-            return Trans::Push(Box::new(PausedState));
+            return Trans::Push(Box::new(ActionState));
         }
 
         Trans::None
     }
 
     fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        data.world.write_resource::<Game>().current_state = CurrentState::Gameplay;
+        data.world.write_resource::<Game>().current_state = CurrentState::AwaitInput;
     }
 
     fn handle_event(
