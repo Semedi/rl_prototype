@@ -1,6 +1,6 @@
 use amethyst::{
     prelude::*,
-    ecs::Join,
+    ecs::{Join, WriteStorage, Component},
     core::{
         transform::Transform,
         math::{Vector3, Point3},
@@ -24,4 +24,9 @@ pub fn get_pos(world: &mut World, x: u32, y: u32) -> Option<Vector3<f32>> {
     else{
         return None
     }
+}
+
+pub fn get_pos_wo<T: Component>(transforms: &mut WriteStorage<T>) {
+
+    println!("hola");
 }
