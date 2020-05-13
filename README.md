@@ -8,7 +8,9 @@ Some of the provided features are:
 - Spritesheet Render
 - Tilemap Loaded
 - Basic transiction between Roguelike states: [Input - PlayerTurn - AI]
+- Basic dummy components and systems
 - Helpers functions
+- ron generator, basic script written in Ruby for generate ron tilesheets that couldn't be generated with amethyst library.
 
 
 
