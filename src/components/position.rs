@@ -4,8 +4,8 @@ use amethyst::{
 
 #[derive(Default)]
 pub struct Position {
-    pub x: i32,
-    pub y: i32,
+    pub x: u32,
+    pub y: u32,
 }
 
 impl Component for Position {

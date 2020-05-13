@@ -20,6 +20,7 @@ use amethyst::{
 use crate::systems;
 use crate::entities;
 use crate::resources;
+use crate::components;
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -104,6 +105,8 @@ impl SimpleState for InputState {
         self.dispatcher.setup(world);
 
         //world.register::<components::Player>();
+        world.register::<components::Position>();
+
 
         let (width, height) = {
             let dim = world.read_resource::<ScreenDimensions>();
